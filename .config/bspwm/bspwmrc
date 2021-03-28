@@ -1,0 +1,141 @@
+#!/bin/bash
+
+export SXHKD_SHELL=/bin/bash
+export GDK_SCALE=1
+export GDK_DPI_SCALE=1
+#export QT_QPA_PLATFORMTHEME=gnome
+LOGS=~/.cache/bspwm/logs
+
+exec >$LOGS/bspwm.log 2>&1
+
+xsetroot -cursor_name left_ptr
+
+deamonize() {
+  echo "[start] $*"
+  if pgrep "$1" >/dev/null; then
+    echo "[warn] $1 is already running..."
+  else
+    "$@" >"$LOGS/$(basename "$1").log" 2>&1 &
+  fi
+}
+
+# siji
+xset +fp ~/.local/share/fonts
+xset fp rehash
+
+# Launch bacground processes
+#deamonize nitrogen --restore
+deamonize sxhkd
+#deamonize picom --experimental-backends --backend glx
+#deamonize picom --config ~/.config/picom/picom.conf
+deamonize ~/picom-test/picom-feature-dual_kawase/build/src/picom --experimental-backend --blur-method dual_kawase --vsync
+#deamonize compton
+deamonize dunst
+deamonize ~/.config/polybar/launch.sh
+#deamonize polydock
+deamonize .config/bspwm/rules-focus.sh
+#deamonize greenclip daemon
+
+# Start gnome keyring. Needed to unlock id_rsa and probably for Brave
+eval "$(gnome-keyring-daemon --start)"
+export SSH_AUTH_SOCK
+
+echo "forked background processes"
+
+if [ $HOSTNAME = "wirbelwind" ] || [ $HOSTNAME = "wirbelwind-arch" ]; then
+	bspc monitor HDMI-A-0 -d 7 8 9 10 11 12
+	bspc monitor DisplayPort-1 -d 1 2 3 4 5 6
+	# Command to stop screen tearing
+	nvidia-settings --assign CurrentMetaMode="$(xrandr | sed -nr '/(\S+) connected (primary )?([0-9]+x[0-9]+)(\+\S+).*/{ s//\1: \3 \4 { ForceFullCompositionPipeline = On }, /; H}; ${ g; s/\n//g; s/, $//; p }')"
+	# Turn off screen blanking on the main desktop
+	export DISPLAY=:0
+	/usr/bin/xset -dpms
+	/usr/bin/xset s off
+elif [ $HOSTNAME = "xeon-arch" ]; then
+        bspc monitor -d 1 2 3 4 5 6 7 8 9 10 11 12
+	# Command to stop screen tearing
+        #nvidia-settings --assign CurrentMetaMode="$(xrandr | sed -nr '/(\S+) connected (primary )?    ([0-9]+x[0-9]+)(\+\S+).*/{ s//\1: \3 \4 { ForceFullCompositionPipeline = On }, /; H}; ${ g; s/\n//    g; s/, $//; p }')"
+        # Turn off screen blanking on the main desktop
+        export DISPLAY=:0
+        /usr/bin/xset -dpms
+        /usr/bin/xset s off
+else
+	# Numbers start from 7 on laptop to maintain compatibility with sxhkd config
+	bspc monitor -d 1 2 3 4 5 6 7 8 9 10 11 12
+fi
+
+bspc config border_width 4
+bspc config window_gap 16
+bspc config focused_border_color "#5294e2"
+bspc config normal_border_color "#282a36"
+bspc config directional_focus_tightness low
+bspc config external_rules_command ~/.config/bspwm/rules.sh
+
+# Wal Colors!
+# shellcheck source=/home/folke/.cache/wal/colors.sh
+. ~/.cache/wal/colors.sh
+bspc config normal_border_color "$color0"
+bspc config active_border_color "$color2"
+bspc config focused_border_color "$color4"
+bspc config presel_feedback_color "$color1"
+
+bspc config split_ratio 0.5
+bspc config borderless_monocle true
+bspc config gapless_monocle true
+bspc config honor_size_hints true
+
+# Mouse Control
+bspc config pointer_modifier mod4
+bspc config pointer_action1 move
+bspc config pointer_action2 resize_side
+
+# Enables click to focus
+bspc config click_to_focus true
+
+# Fix reparenting issues with java applications (eg. matlab, jetbrains IDEs)
+wmname LG3D
+
+DEFAULT_WP=${HOME}/dotfiles/.default_wp
+
+# Set the wallpaper
+
+# TESTING - DYNAMIC WALLPAPER
+#deamonize dwall -s firewatch
+
+if [[ -f "${HOME}/.wpdyn" ]]; then
+	dwall -s firewatch 2>&1 &
+else
+	if [[ -f "${HOME}/.wallpaper" ]]; then
+		if [[ -f "${HOME}/.wptoggle" ]]; then
+			feh --bg-fill $DEFAULT_WP
+		else
+			feh --bg-fill ${HOME}/.wallpaper			# Custom wallpaper
+		fi
+	else
+		feh --bg-fill $DEFAULT_WP	# Default wallpaper from dotfiles
+	fi
+fi
+
+# Fix mapping of Razer gamepad
+~/dotfiles/remap.sh
+
+# Application rules
+bspc rule -a Google-chrome desktop='^8'
+
+# System dependent application rules
+if [ $HOSTNAME = "wirbelwind" ]; then
+	bspc rule -a Slack desktop='^5'
+	bspc rule -a discord desktop='^6'
+	bspc rule -a spotify desktop='^4'
+else
+	bspc rule -a Slack desktop='^5'
+	bspc rule -a discord desktop='^6'
+	bspc rule -a spotify desktop='^4'
+fi
+
+# Auto start some applications
+# slack &
+discord &
+# spotify &
+~/dotfiles/.config/bspwm/timed_ws_swap.sh
+# ~/dotfiles/.config/bspwm/spotify_wmctrl.sh

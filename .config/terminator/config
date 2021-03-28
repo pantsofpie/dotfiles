@@ -1,0 +1,24 @@
+[global_config]
+[keybindings]
+[profiles]
+  [[default]]
+    allow_bold = False
+    background_color = "#282a36"
+    background_darkness = 0.7
+    background_type = transparent
+    cursor_color = "#aaaaaa"
+    font = SF Mono 11
+    foreground_color = "#f8f8f2"
+    show_titlebar = False
+    scrollbar_position = hidden
+    palette = "#285886:#bf1515:#809699:#b1ba4c:#4ba9bd:#008183:#ffffff:#b8b8b2:#386896:#ff5555:#a0b6b9:#f1fa8c:#8be9fd:#29a9aa:#c7c7c7:#f8f8f2"
+    use_system_font = False
+[layouts]
+  [[default]]
+    [[[child1]]]
+      parent = window0
+      type = Terminal
+    [[[window0]]]
+      parent = ""
+      type = Window
+[plugins]

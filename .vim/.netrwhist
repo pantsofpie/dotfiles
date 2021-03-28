@@ -1,0 +1,7 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhistcnt =5
+let g:netrw_dirhist_5='/home/piepants/.config/discord'
+let g:netrw_dirhist_4='/home/piepants/dotfiles/.config/bspwm'
+let g:netrw_dirhist_3='/home/piepants/dotfiles/.themes/dracula/gtk-3.0'
+let g:netrw_dirhist_2='/home/piepants/dotfiles/.vim/pack/themes/start/dracula/autoload/lightline'
+let g:netrw_dirhist_1='/home/piepants/.oh-my-zsh'

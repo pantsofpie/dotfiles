@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ "$(mocp -i 2>/dev/null | grep State)" = "State: PLAY" ]; then
+  echo 
+else
+  echo 
+fi
